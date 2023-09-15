@@ -8,7 +8,7 @@ const item_controller = require("../controllers/itemController");
 /// ITEM ROUTES ///
 
 // GET catalog home page.
-router.get("/", item.index);
+router.get("/", item_controller.index);
 
 // GET request for creating a Item. NOTE This must come before routes that display Item (uses id).
 router.get("/item/create", item_controller.item_create_get);
@@ -70,6 +70,6 @@ router.post(
 router.get("/department/:id", department_controller.department_detail);
 
 // GET request for list of all Department.
-router.get("/department", department_controller.department_list);
+router.get("/departments", department_controller.department_list);
 
 module.exports = router;

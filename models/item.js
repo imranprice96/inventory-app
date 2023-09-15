@@ -11,7 +11,7 @@ const ItemSchema = new Schema({
     required: true,
   },
   price: { type: Number, required: true },
-  stockCount: { type: Int32Array, required: true },
+  stockCount: { type: Number, required: true },
 });
 
 ItemSchema.virtual("url").get(function () {
