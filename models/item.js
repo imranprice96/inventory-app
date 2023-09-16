@@ -10,12 +10,12 @@ const ItemSchema = new Schema({
     ref: "Department",
     required: true,
   },
-  price: { type: Number, required: true },
+  price: { type: String, required: true },
   stockCount: { type: Number, required: true },
 });
 
 ItemSchema.virtual("url").get(function () {
-  return `inventory/item/${this._id}`;
+  return `catalog/item/${this._id}`;
 });
 
 module.exports = mongoose.model("Item", ItemSchema);

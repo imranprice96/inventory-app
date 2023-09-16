@@ -50,14 +50,16 @@ async function itemCreate(
   price,
   stockCount
 ) {
-  const item = new Item({
+  const itemDetail = {
     name: name,
     description: description,
     department: department,
     price: price,
     stockCount: stockCount,
-  });
-  items[index] = item;
+  };
+  const item = new Item(itemDetail);
+  await item.save();
+  item[index] = item;
   console.log(`Added item: ${name}`);
 }
 
@@ -73,14 +75,15 @@ async function createDepartments() {
 
 async function createItems() {
   console.log("Adding items");
-  itemCreate(
-    0,
-    "White sugar 500g",
-    "Pure cane sugar, makes the day a little sweeter.",
-    departments[0],
-    "$3.00 ea",
-    331
-  ),
+  await Promise.all([
+    itemCreate(
+      0,
+      "White sugar 500g",
+      "Pure cane sugar, makes the day a little sweeter.",
+      departments[0],
+      "$3.00 ea",
+      331
+    ),
     itemCreate(
       1,
       "Instant coffee",
@@ -168,7 +171,6 @@ async function createItems() {
       departments[3],
       "$12.99 ea",
       28
-    );
+    ),
+  ]);
 }
-
-//node populatedb mongodb+srv://reindurr7:admin@cluster0.pq3rhn5.mongodb.net/

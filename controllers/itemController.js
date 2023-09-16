@@ -1,8 +1,21 @@
 const Item = require("../models/item");
+const Department = require("../models/department");
 const asyncHandler = require("express-async-handler");
 
 exports.index = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Site Home Page");
+  // Get details of items, department counts (in parallel)
+  const [numItems, numAvailableItems, numDepartments, ,] = await Promise.all([
+    Item.countDocuments({}).exec(),
+    Item.countDocuments({ stockCount: 0 }).exec(),
+    Department.countDocuments({}).exec(),
+  ]);
+
+  res.render("index", {
+    title: "Supermarket Inventory Home",
+    item_count: numItems,
+    item_stock_count: numAvailableItems,
+    department_count: numDepartments,
+  });
 });
 
 // Display list of all Items.
