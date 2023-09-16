@@ -4,23 +4,26 @@ const asyncHandler = require("express-async-handler");
 
 exports.index = asyncHandler(async (req, res, next) => {
   // Get details of items, department counts (in parallel)
-  const [numItems, numAvailableItems, numDepartments, ,] = await Promise.all([
+  const [numItems, numDepartments, ,] = await Promise.all([
     Item.countDocuments({}).exec(),
-    Item.countDocuments({ stockCount: 0 }).exec(),
     Department.countDocuments({}).exec(),
   ]);
 
   res.render("index", {
     title: "Supermarket Inventory Home",
     item_count: numItems,
-    item_stock_count: numAvailableItems,
     department_count: numDepartments,
   });
 });
 
 // Display list of all Items.
 exports.item_list = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item list");
+  const allItems = await Item.find({}, "name department price")
+    .sort({ name: 1 })
+    .populate("department")
+    .exec();
+
+  res.render("item_list", { title: "Item List", item_list: allItems });
 });
 
 // Display detail page for a specific Item.
