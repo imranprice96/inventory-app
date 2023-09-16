@@ -1,5 +1,6 @@
 const Department = require("../models/department");
 const asyncHandler = require("express-async-handler");
+const Item = require("../models/item");
 
 // Display list of Departments
 exports.department_list = asyncHandler(async (req, res, next) => {
@@ -12,7 +13,22 @@ exports.department_list = asyncHandler(async (req, res, next) => {
 });
 
 exports.department_detail = asyncHandler(async (req, res, next) => {
-  res.send(`NOT IMPLEMENTED: Department detail: ${req.params.id}`);
+  const [department, itemsInDepartment] = await Promise.all([
+    Department.findById(req.params.id).exec(),
+    Item.find({ department: req.params.id }, "name description").exec(),
+  ]);
+  if (department === null) {
+    // No results.
+    const err = new Error("Department not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("department_detail", {
+    title: "Department Detail",
+    department: department,
+    department_items: itemsInDepartment,
+  });
 });
 
 // Display Department create form on GET.
