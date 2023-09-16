@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  h1 #{item.name}
+  br
+  p #[strong Department:]
+    a(href=item.department.url)  #{item.department.name}
+  p #[strong Description:] #{item.description}
+  p #[strong Price:] #{item.price}
+  p #[strong Stock Count:] #{item.stockCount}

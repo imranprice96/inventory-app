@@ -28,7 +28,19 @@ exports.item_list = asyncHandler(async (req, res, next) => {
 
 // Display detail page for a specific Item.
 exports.item_detail = asyncHandler(async (req, res, next) => {
-  res.send(`NOT IMPLEMENTED: Item detail: ${req.params.id}`);
+  const item = await Item.findById(req.params.id).populate("department").exec();
+
+  if (item === null) {
+    // No results.
+    const err = new Error("Book copy not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("item_detail", {
+    title: "Book:",
+    item: item,
+  });
 });
 
 // Display Item create form on GET.
