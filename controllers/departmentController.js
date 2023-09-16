@@ -3,7 +3,12 @@ const asyncHandler = require("express-async-handler");
 
 // Display list of Departments
 exports.department_list = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Department list");
+  const allDepartments = await Department.find().sort({ name: 1 }).exec();
+
+  res.render("department_list", {
+    title: "Department List",
+    department_list: allDepartments,
+  });
 });
 
 exports.department_detail = asyncHandler(async (req, res, next) => {
