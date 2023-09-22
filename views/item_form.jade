@@ -1,0 +1,33 @@
+extends layout
+
+block content
+  h1= title
+
+  form(method='POST' action='')
+    div.form-group
+      label(for='name') Name:
+      input#name.form-control(type='text', placeholder='Name of item' name='name' required='true' maxLength="100" value=(undefined===item ? '' : item.name) )
+    div.form-group
+      label(for='description') Description:
+      textarea#description.form-control(type='textarea', placeholder='Description' name='description' required='true') #{undefined===item ? '' : item.description}
+    div.form-group
+      label(for='department') Department:
+      select#department.form-control(type='select', placeholder='Select department' name='department' required='true' )
+        - departments.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+        for department in departments
+          if item
+            option(value=department._id selected=(department._id.toString()===item.department._id.toString() ? 'selected' : false) ) #{department.name}
+          else
+            option(value=department._id) #{department.name}
+    div.form-group
+      label(for='price') Price:
+      input#price.form-control(type='text', placeholder='$0.00 ea' name='price' value=(undefined===item ? '' : item.price) required='true')
+    div.form-group
+      label(for='stockCount') Stock Count:
+      input#stockCount.form-control(type='number', placeholder='0' name='stockCount' value=(undefined===item ? '' : item.stockCount) required='true')
+    button.btn.btn-primary(type='submit') Submit
+
+  if errors
+    ul
+      for error in errors
+        li!= error.msg

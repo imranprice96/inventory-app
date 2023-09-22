@@ -14,7 +14,7 @@ router.get("/", item_controller.index);
 router.get("/item/create", item_controller.item_create_get);
 
 // POST request for creating Item.
-router.get("/item/create", item_controller.item_create_post);
+router.post("/item/create", item_controller.item_create_post);
 
 // GET request to delete Item.
 router.get("/item/:id/delete", item_controller.item_delete_get);

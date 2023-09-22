@@ -45,6 +45,7 @@ exports.department_create_post = [
     .isLength({ min: 1 })
     .escape()
     .withMessage("Name must be specified."),
+  body("description").trim().escape(),
 
   // Process request after validation and sanitization.
   asyncHandler(async (req, res, next) => {

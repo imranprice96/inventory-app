@@ -1,6 +1,7 @@
 const Item = require("../models/item");
 const Department = require("../models/department");
 const asyncHandler = require("express-async-handler");
+const { body, validationResult } = require("express-validator");
 
 exports.index = asyncHandler(async (req, res, next) => {
   // Get details of items, department counts (in parallel)
@@ -45,13 +46,63 @@ exports.item_detail = asyncHandler(async (req, res, next) => {
 
 // Display Item create form on GET.
 exports.item_create_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item create GET");
+  const allDepartments = await Department.find({}, "name").exec();
+
+  res.render("item_form", {
+    title: "Create Item",
+    departments: allDepartments,
+  });
 });
 
 // Handle Item create on POST.
-exports.item_create_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item create POST");
-});
+exports.item_create_post = [
+  // Validate and sanitize fields.
+  body("name", "name must not be empty.").trim().isLength({ min: 1 }).escape(),
+  body("description").trim().escape(),
+  body("department", "Department must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("price", "Summary must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("stockCount", "Stock count must be numeric").trim().isNumeric().escape(),
+
+  // Process request after validation and sanitization.
+
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a Book object with escaped and trimmed data.
+    const item = new Item({
+      name: req.body.name,
+      description: req.body.description,
+      department: req.body.department,
+      price: req.body.price,
+      stockCount: req.body.stockCount,
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all departments for form.
+      const allDepartments = await Department.find({}, "name").exec();
+
+      res.render("item_form", {
+        title: "Create Item",
+        departments: allDepartments,
+        item: item,
+        errors: errors.array(),
+      });
+    } else {
+      // Data from form is valid. Save item.
+      await item.save();
+      res.redirect(item.url);
+    }
+  }),
+];
 
 // Display Item delete form on GET.
 exports.item_delete_get = asyncHandler(async (req, res, next) => {
