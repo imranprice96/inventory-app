@@ -1,6 +1,7 @@
 const Department = require("../models/department");
 const asyncHandler = require("express-async-handler");
 const Item = require("../models/item");
+const { body, validationResult } = require("express-validator");
 
 // Display list of Departments
 exports.department_list = asyncHandler(async (req, res, next) => {
@@ -33,13 +34,47 @@ exports.department_detail = asyncHandler(async (req, res, next) => {
 
 // Display Department create form on GET.
 exports.department_create_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Department create GET");
+  res.render("department_form", { title: "Create Department" });
 });
 
 // Handle Department create on POST.
-exports.department_create_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Department create POST");
-});
+exports.department_create_post = [
+  // Validate and sanitize fields.
+  body("name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Name must be specified."),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create Author object with escaped and trimmed data
+    const department = new Department({
+      name: req.body.name,
+      description: req.body.description,
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/errors messages.
+      res.render("department_form", {
+        title: "Create Department",
+        despartment: department,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid.
+
+      // Save department.
+      await department.save();
+      // Redirect to new department record.
+      res.redirect(department.url);
+    }
+  }),
+];
 
 // Display Department delete form on GET.
 exports.department_delete_get = asyncHandler(async (req, res, next) => {
