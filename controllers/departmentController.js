@@ -79,12 +79,45 @@ exports.department_create_post = [
 
 // Display Department delete form on GET.
 exports.department_delete_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Department delete GET");
+  // Get details of department and all their items (in parallel)
+  const [department, allItemsInDepartment] = await Promise.all([
+    Department.findById(req.params.id).exec(),
+    Item.find({ department: req.params.id }, "name description").exec(),
+  ]);
+
+  if (department === null) {
+    // No results.
+    res.redirect("/catalog/departments");
+  }
+
+  res.render("department_delete", {
+    title: "Delete Department",
+    department: department,
+    department_items: allItemsInDepartment,
+  });
 });
 
 // Handle Department delete on POST.
 exports.department_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Department delete POST");
+  // Get details of department and all their items (in parallel)
+  const [department, allItemsInDepartment] = await Promise.all([
+    Department.findById(req.params.id).exec(),
+    Item.find({ department: req.params.id }, "name description").exec(),
+  ]);
+
+  if (allItemsInDepartment.length > 0) {
+    // Department has items. Render in same way as for GET route.
+    res.render("department_delete", {
+      title: "Delete Department",
+      department: department,
+      department_items: allItemsInDepartment,
+    });
+    return;
+  } else {
+    // Department has no items. Delete object and redirect to the list of departments.
+    await Department.findByIdAndRemove(req.body.departmentid);
+    res.redirect("/catalog/departments");
+  }
 });
 
 // Display Department update form on GET.
