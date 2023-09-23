@@ -2,6 +2,7 @@ const Item = require("../models/item");
 const Department = require("../models/department");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const item = require("../models/item");
 
 exports.index = asyncHandler(async (req, res, next) => {
   // Get details of items, department counts (in parallel)
@@ -133,10 +134,74 @@ exports.item_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display Item update form on GET.
 exports.item_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item update GET");
+  // Get item and departments for form.
+  const [item, allDepartments] = await Promise.all([
+    Item.findById(req.params.id).populate("department").exec(),
+    Department.find().exec(),
+  ]);
+
+  if (item === null) {
+    // No results.
+    const err = new Error("Item not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("item_form", {
+    title: "Update Item",
+    departments: allDepartments,
+    item: item,
+  });
 });
 
-// Handle Item update on POST.
-exports.item_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item update POST");
-});
+// Handle item update on POST.
+exports.item_update_post = [
+  // Validate and sanitize fields.
+  body("name", "name must not be empty.").trim().isLength({ min: 1 }).escape(),
+  body("description").trim().escape(),
+  body("department", "Department must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("price", "Summary must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("stockCount", "Stock count must be numeric").trim().isNumeric().escape(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a Item object with escaped/trimmed data and old id.
+    const item = new Item({
+      name: req.body.name,
+      description: req.body.description,
+      department: req.body.department,
+      price: req.body.price,
+      stockCount: req.body.stockCount,
+      _id: req.params.id, // This is required, or a new ID will be assigned!
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all departments for form
+      const allDepartments = await Department.find({}, "name").exec();
+
+      res.render("item_form", {
+        title: "Update Item",
+        departments: allDepartments,
+        item: item,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      const updatedItem = await Item.findByIdAndUpdate(req.params.id, item, {});
+      // Redirect to item detail page.
+      res.redirect(updatedItem.url);
+    }
+  }),
+];
