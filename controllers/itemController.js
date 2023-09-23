@@ -33,13 +33,13 @@ exports.item_detail = asyncHandler(async (req, res, next) => {
 
   if (item === null) {
     // No results.
-    const err = new Error("Book copy not found");
+    const err = new Error("Item copy not found");
     err.status = 404;
     return next(err);
   }
 
   res.render("item_detail", {
-    title: "Book:",
+    title: "Item:",
     item: item,
   });
 });
@@ -106,12 +106,29 @@ exports.item_create_post = [
 
 // Display Item delete form on GET.
 exports.item_delete_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item delete GET");
+  const item = await Item.findById(req.params.id).populate("department").exec();
+
+  if (item === null) {
+    // No results.
+    res.redirect("/catalog/items");
+  }
+
+  res.render("item_delete", {
+    title: "Item:",
+    item: item,
+  });
 });
 
 // Handle Item delete on POST.
 exports.item_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item delete POST");
+  const item = await Item.findById(req.params.id).populate("department").exec();
+  if (item === null) {
+    // No results.
+    res.redirect("/catalog/items");
+  }
+
+  await Item.findByIdAndRemove(req.body.itemid);
+  res.redirect("/catalog/items");
 });
 
 // Display Item update form on GET.
