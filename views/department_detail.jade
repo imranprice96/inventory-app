@@ -3,6 +3,7 @@ extends layout
 block content
 
   h1 Department: #{department.name}
+  p #[strong Description:] #{department.description}
 
   div(style='margin-left:20px;margin-top:20px')
 
@@ -18,5 +19,7 @@ block content
         p This department has no items
     hr
     p
-      a(href=department.url+'/delete') Delete department
+      a(href=department.url+'/delete') Delete Department
+    p
+      a(href=department.url+'/update') Update Department
 

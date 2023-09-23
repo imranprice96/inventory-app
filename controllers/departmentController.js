@@ -52,7 +52,7 @@ exports.department_create_post = [
     // Extract the validation errors from a request.
     const errors = validationResult(req);
 
-    // Create Author object with escaped and trimmed data
+    // Create Department object with escaped and trimmed data
     const department = new Department({
       name: req.body.name,
       description: req.body.description,
@@ -122,10 +122,56 @@ exports.department_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display Department update form on GET.
 exports.department_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Department update GET");
+  const department = await Department.findById(req.params.id).exec();
+  console.log("-------- " + department);
+  if (department === null) {
+    // No results.
+    const err = new Error("Department not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("department_form", {
+    title: "Update Department",
+    department: department,
+  });
 });
 
 // Handle Department update on POST.
-exports.department_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Department update POST");
-});
+exports.department_update_post = [
+  // Validate and sanitize fields.
+  body("name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Name must be specified."),
+  body("description").trim().escape(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create Department object with escaped and trimmed data (and the old id!)
+    const department = new Department({
+      name: req.body.name,
+      description: req.body.description,
+      _id: req.params.id,
+    });
+    console.log("********* " + department);
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render the form again with sanitized values and error messages.
+      res.render("department_form", {
+        title: "Update Department",
+        department: department,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      await Department.findByIdAndUpdate(req.params.id, department);
+      res.redirect(department.url);
+    }
+  }),
+];
